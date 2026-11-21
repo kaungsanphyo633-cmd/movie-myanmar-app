@@ -70,7 +70,6 @@
   .row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .row-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 
-  /* Stylish Payment Card */
   .pay-card-premium {
     background: linear-gradient(145deg, #1a2138 0%, #111626 100%);
     border: 1.5px solid #2e3b61;
@@ -286,7 +285,7 @@
         </div>
         <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">စာတန်း ဖောင့် & စတိုင်</div>
         <div class="row-3" style="margin-bottom:8px;">
-          <div class="chip active" onclick="setSubFont('Padauk',this)">မြန်မာ Padauk</div>
+          <div class="chip active" id="setSubFont('Padauk',this)">မြန်မာ Padauk</div>
           <div class="chip" onclick="setSubFont('Noto Serif Myanmar',this)">မြန်မာ Serif</div>
           <div class="chip" onclick="setSubStyle('Sunny',this)">🟡 အဝါရောင်</div>
         </div>
@@ -404,7 +403,6 @@
       </div>
     </div>
 
-    <!-- Stylish Payment Box -->
     <div class="pay-card-premium">
       <div class="pay-header-row">
         <div class="wallet-badge" id="walletBadgeDisplay">
@@ -562,39 +560,47 @@
       document.getElementById("ttsDownload").href = fullUrl;
       document.getElementById("ttsResult").classList.remove("hidden");
       loadUser();
-    } catch (e) { alert("❌ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ"); }
+    } catch (e) { alert("❌ " + (e.message || "ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည်")); }
     btn.disabled = false; btn.innerText = "✨ Generate Voice";
   }
 
-  // Extract lightweight WAV audio directly in browser so upload never fails!
-  async function extractAudioWav(file) {
+  // Ultra-lightweight 8kHz 8-bit Mono WAV extractor (4x smaller, zero RAM crash)
+  async function extractTinyAudioWav(file) {
     const arrayBuf = await file.arrayBuffer();
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-    const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
-    const duration = audioBuf.duration;
-    const chData = audioBuf.getChannelData(0);
-    const wavBuf = new ArrayBuffer(44 + chData.length * 2);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const decoded = await audioCtx.decodeAudioData(arrayBuf);
+    const duration = decoded.duration;
+    await audioCtx.close();
+
+    const targetRate = 8000;
+    const offlineCtx = new OfflineAudioContext(1, Math.ceil(duration * targetRate), targetRate);
+    const src = offlineCtx.createBufferSource();
+    src.buffer = decoded;
+    src.connect(offlineCtx.destination);
+    src.start(0);
+    const rendered = await offlineCtx.startRendering();
+    const chData = rendered.getChannelData(0);
+
+    const wavBuf = new ArrayBuffer(44 + chData.length);
     const view = new DataView(wavBuf);
     const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
     writeStr(0, 'RIFF');
-    view.setUint32(4, 36 + chData.length * 2, true);
+    view.setUint32(4, 36 + chData.length, true);
     writeStr(8, 'WAVE');
     writeStr(12, 'fmt ');
     view.setUint32(16, 16, true);
     view.setUint16(20, 1, true);
     view.setUint16(22, 1, true);
-    view.setUint32(24, 16000, true);
-    view.setUint32(28, 32000, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
+    view.setUint32(24, targetRate, true);
+    view.setUint32(28, targetRate, true);
+    view.setUint16(32, 1, true);
+    view.setUint16(34, 8, true);
     writeStr(36, 'data');
-    view.setUint32(40, chData.length * 2, true);
-    let offset = 44;
-    for (let i = 0; i < chData.length; i++, offset += 2) {
+    view.setUint32(40, chData.length, true);
+    for (let i = 0; i < chData.length; i++) {
       let s = Math.max(-1, Math.min(1, chData[i]));
-      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      view.setUint8(44 + i, Math.round((s + 1) * 127.5));
     }
-    await audioCtx.close();
     return { blob: new Blob([wavBuf], { type: 'audio/wav' }), duration };
   }
 
@@ -614,7 +620,7 @@
           reject(new Error("ဆာဗာ ပြန်ကြားချက် ဖတ်မရပါ"));
         }
       };
-      xhr.onerror = () => reject(new Error("အင်တာနက်လိုင်း သို့မဟုတ် ဆာဗာ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည်"));
+      xhr.onerror = () => reject(new Error("ဆာဗာသို့ ဖိုင်ပေးပို့ရာတွင် ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ"));
       xhr.send(formData);
     });
   }
@@ -632,29 +638,48 @@
 
     errBox.classList.add("hidden");
     progWrap.classList.remove("hidden");
-    barFill.style.width = "5%";
-    progText.innerText = "📤 Video ပြင်ဆင်နေသည်... 5%";
+    barFill.style.width = "10%";
+    progText.innerText = "📤 Video ပြင်ဆင်နေသည်... 10%";
 
     try {
-      const { blob, duration } = await extractAudioWav(file);
+      const { blob, duration } = await extractTinyAudioWav(file);
       const fd = new FormData();
       fd.append("user_id", tgUser.id);
       fd.append("duration", duration);
       fd.append("file", blob, "audio.wav");
 
-      const d = await xhrUpload(`${API_BASE}/api/analyze-audio`, fd, pct => {
-        const scaled = Math.min(90, Math.max(10, Math.round(pct * 0.85)));
+      const initRes = await xhrUpload(`${API_BASE}/api/analyze-audio`, fd, pct => {
+        const scaled = Math.min(80, Math.max(15, Math.round(pct * 0.75)));
         barFill.style.width = scaled + "%";
         progText.innerText = `📤 Video တင်နေသည်... ${scaled}%`;
       });
 
+      const jobId = initRes.job_id;
+      let fakePct = 82;
+      let resultData = null;
+
+      while (!resultData) {
+        await new Promise(r => setTimeout(r, 2000));
+        if (fakePct < 96) fakePct += 2;
+        barFill.style.width = fakePct + "%";
+        progText.innerText = `🤖 AI မြန်မာဘာသာပြန်နေသည်... ${fakePct}%`;
+
+        const pollRes = await fetch(`${API_BASE}/api/job/${jobId}`);
+        const pollJson = await pollRes.json();
+        if (pollJson.status === "done") {
+          resultData = pollJson;
+        } else if (pollJson.status === "error") {
+          throw new Error(pollJson.detail || "AI ဘာသာပြန်ရာတွင် အဆင်မပြေပါ");
+        }
+      }
+
       barFill.style.width = "100%";
       progText.innerText = "✅ မြန်မာဘာသာပြန်ပြီးပါပြီ! 100%";
 
-      state.jobId = d.job_id;
-      state.duration = d.duration;
-      state.script = d.script;
-      document.getElementById("vidCost").innerText = d.est_cost;
+      state.jobId = resultData.job_id;
+      state.duration = resultData.duration;
+      state.script = resultData.script;
+      document.getElementById("vidCost").innerText = resultData.est_cost;
       renderScriptList();
       document.getElementById("videoEditor").classList.remove("hidden");
     } catch (e) {
