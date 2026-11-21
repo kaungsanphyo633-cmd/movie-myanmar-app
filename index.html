@@ -22,7 +22,7 @@
   .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg); position: sticky; top: 0; z-index: 50; border-bottom: 1px solid #1f2336; }
   .brand { display: flex; align-items: center; gap: 10px; }
   .logo { width: 38px; height: 38px; border-radius: 50%; background: var(--grad); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
-  .points-pill { background: var(--card2); border: 1px solid #2e344e; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px; font-weight: bold; color: var(--accent); }
+  .points-pill { background: var(--card2); border: 1px solid #2e344e; padding: 6px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 6px; font-weight: bold; color: var(--accent); cursor: pointer; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
   .container { padding: 14px; max-width: 520px; margin: auto; }
   .hero { background: linear-gradient(145deg, #1b1e32, #131624); border: 1px solid #2b304a; border-radius: 16px; padding: 16px; margin-bottom: 14px; text-align: center; }
@@ -37,12 +37,16 @@
   .voice-opt { background: var(--card2); border: 1.5px solid #2c324c; border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .voice-opt.selected { border-color: var(--purple); background: rgba(139, 92, 246, 0.14); }
   .speed-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-  .chip { background: var(--card2); border: 1px solid #2c324c; color: var(--text); padding: 8px 4px; border-radius: 10px; font-size: 12px; text-align: center; cursor: pointer; }
+  .chip { background: var(--card2); border: 1px solid #2c324c; color: var(--text); padding: 8px 4px; border-radius: 10px; font-size: 12px; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .chip.active { background: var(--grad); border-color: transparent; font-weight: bold; color: #fff; }
   textarea { width: 100%; background: #0f111a; border: 1px solid #2c324c; border-radius: 12px; color: #fff; padding: 12px; font-size: 14px; min-height: 120px; resize: vertical; }
   .primary-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; background: var(--grad); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; }
   .primary-btn:disabled { opacity: 0.5; }
   .upload-box { border: 2px dashed #374151; border-radius: 14px; padding: 24px 12px; text-align: center; cursor: pointer; background: #111420; }
+  .progress-wrap { margin-top: 14px; background: #10131f; border: 1px solid #262c45; border-radius: 12px; padding: 12px; }
+  .progress-bar-bg { width: 100%; height: 8px; background: #22273d; border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .progress-bar-fill { height: 100%; width: 0%; background: var(--grad); border-radius: 99px; transition: width 0.25s ease; }
+  .progress-text { font-size: 13px; color: var(--accent); font-weight: bold; text-align: center; }
   .preview-wrap { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-top: 10px; touch-action: none; }
   .preview-wrap video { width: 100%; display: block; max-height: 300px; object-fit: contain; }
   .preview-wrap.flipped video { transform: scaleX(-1); }
@@ -65,7 +69,91 @@
   .hidden { display: none !important; }
   .row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .row-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .pay-box { background: #10131e; border: 1px solid #2d3450; border-radius: 12px; padding: 12px; margin-top: 10px; font-size: 13px; line-height: 1.7; }
+
+  /* Stylish Payment Card */
+  .pay-card-premium {
+    background: linear-gradient(145deg, #1a2138 0%, #111626 100%);
+    border: 1.5px solid #2e3b61;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .pay-card-premium::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: var(--grad);
+  }
+  .pay-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #2c3654;
+  }
+  .wallet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 15px;
+  }
+  .kpay-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: #0054a6; color: #fff; font-weight: 900; font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 84, 166, 0.5);
+  }
+  .wave-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: #ffcb05; color: #0054a6; font-weight: 900; font-size: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(255, 203, 5, 0.45);
+  }
+  .phone-copy-box {
+    background: #0b0e18;
+    border: 1px solid #334168;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .phone-copy-box:active { transform: scale(0.98); border-color: var(--accent); }
+  .phone-num { font-size: 19px; font-weight: bold; letter-spacing: 1px; color: #fff; }
+  .copy-pill {
+    background: var(--grad);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .copy-toast {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.14);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    padding: 6px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  .pay-detail-grid {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .pay-detail-grid b { color: #fff; }
 </style>
 </head>
 <body>
@@ -135,6 +223,7 @@
       <button class="primary-btn" id="btnGenTts" onclick="generateTTS()">✨ Generate Voice</button>
       <div id="ttsResult" class="hidden" style="margin-top:12px;">
         <audio id="ttsAudio" controls style="width:100%;"></audio>
+        <div style="font-size:12px; color:#22c55e; text-align:center; margin-top:6px;">✅ Telegram Bot Chat ထဲသို့လည်း အသံဖိုင် ပို့ပေးလိုက်ပါပြီ</div>
         <a id="ttsDownload" download="MovieMyanmarAi_Voice.mp3" class="primary-btn" style="display:block; text-align:center; text-decoration:none; margin-top:8px;">⬇️ Download MP3</a>
       </div>
     </div>
@@ -151,11 +240,18 @@
         <div style="font-weight:bold; margin-top:4px;">Video တင်ရန် နှိပ်ပါ</div>
         <div style="font-size:11px; color:var(--muted);">အများဆုံး ၁၅ မိနစ် • MP4 / MOV</div>
       </div>
-      <div id="uploadStatus" style="margin-top:10px; font-size:13px; color:var(--accent); text-align:center;"></div>
+
+      <div id="uploadProgressWrap" class="progress-wrap hidden">
+        <div style="font-size:12px; color:var(--muted); text-align:center; margin-bottom:8px;" id="aiSubNotice">⏳ AI က ဗီဒီယိုနားထောင်ပြီး မြန်မာဘာသာပြန်နေပါသည် (ခဏစောင့်ပါ)</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="uploadBarFill"></div>
+        </div>
+        <div class="progress-text" id="uploadProgressText">📤 Video တင်နေသည်... 0%</div>
+      </div>
+      <div id="uploadErrorMsg" class="hidden" style="margin-top:10px; font-size:13px; color:#f87171; text-align:center; font-weight:bold;"></div>
     </div>
 
     <div id="videoEditor" class="hidden">
-      <!-- Mask & Subtitle Position -->
       <div class="card">
         <div class="card-title"><span>🖼️ မူရင်းစာသား/Logo ဖုံးရန် & စာတန်းနေရာ</span></div>
         <div class="row-3" style="margin-bottom:8px;">
@@ -170,7 +266,6 @@
         </div>
       </div>
 
-      <!-- Flip, Subtitle Options -->
       <div class="card">
         <div class="card-title"><span>🔄 Video ပြင်ဆင်မှု & စာတန်းစတိုင်</span></div>
         <div class="row-3" style="grid-template-columns:1fr 1fr; margin-bottom:10px;">
@@ -202,7 +297,6 @@
         </div>
       </div>
 
-      <!-- Editable Script -->
       <div class="card">
         <div class="card-title">
           <span>✏️ မြန်မာစာတန်းများ ပြင်ဆင်ပါ</span>
@@ -211,7 +305,6 @@
         <div id="scriptList"></div>
       </div>
 
-      <!-- 3-Way Voice Selection -->
       <div class="card">
         <div class="card-title"><span>🗣️ အသံထွက်ပုံစံ ရွေးချယ်ပါ (၃ မျိုး)</span></div>
         <div class="voice-grid">
@@ -246,9 +339,13 @@
         </div>
 
         <button class="primary-btn" id="btnRender" onclick="renderVideo()" style="margin-top:14px;">🎬 Recap Video ထုတ်မယ်</button>
-        <div id="renderStatus" style="margin-top:10px; font-size:13px; color:var(--accent); text-align:center;"></div>
+        <div id="renderProgressWrap" class="progress-wrap hidden">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="renderBarFill"></div></div>
+          <div class="progress-text" id="renderProgressText">🎬 Video ထုတ်လုပ်နေသည်... 0%</div>
+        </div>
         <div id="vidResult" class="hidden" style="margin-top:12px;">
           <video id="outVideo" controls style="width:100%; border-radius:12px;"></video>
+          <div style="font-size:12px; color:#22c55e; text-align:center; margin-top:6px;">✅ Telegram Bot Chat ထဲသို့လည်း Video ပို့ပေးလိုက်ပါပြီ</div>
           <a id="vidDownload" download="MovieMyanmarAi_Recap.mp4" class="primary-btn" style="display:block; text-align:center; text-decoration:none; margin-top:8px;">⬇️ Video Download ဆွဲမည်</a>
         </div>
       </div>
@@ -297,17 +394,39 @@
       </div>
     </div>
 
-    <div style="font-size:13px; font-weight:bold; margin:12px 0 6px;">၂ • ငွေပေးနည်း ရွေးပါ</div>
+    <div style="font-size:13px; font-weight:bold; margin:12px 0 8px;">၂ • ငွေပေးနည်း ရွေးပါ</div>
     <div class="row-3" style="grid-template-columns:1fr 1fr;">
-      <div class="chip active" id="pay-kpay" onclick="selectPay('KBZPay')">💙 KBZPay</div>
-      <div class="chip" id="pay-wave" onclick="selectPay('WavePay')">💛 WavePay</div>
+      <div class="chip active" id="pay-kpay" onclick="selectPay('KBZPay')">
+        <span class="kpay-icon">KBZ</span> <span>KBZPay</span>
+      </div>
+      <div class="chip" id="pay-wave" onclick="selectPay('WavePay')">
+        <span class="wave-icon">W</span> <span>WavePay</span>
+      </div>
     </div>
 
-    <div class="pay-box">
-      <div>ငွေလွှဲရမည့် အကောင့် — <b id="payMethodText">KBZPay</b></div>
-      <div>ဖုန်းနံပါတ်: <b style="color:var(--accent); font-size:15px;">09409700002</b></div>
-      <div>အမည်: <b>Kaung San Phyo</b></div>
-      <div>လွှဲရမည့် ပမာဏ: <b id="payAmountText" style="color:#facc15;">10,000 ကျပ်</b></div>
+    <!-- Stylish Payment Box -->
+    <div class="pay-card-premium">
+      <div class="pay-header-row">
+        <div class="wallet-badge" id="walletBadgeDisplay">
+          <span class="kpay-icon">KBZ</span> <span>KBZPay ငွေလွှဲအကောင့်</span>
+        </div>
+        <span style="font-size:11px; color:var(--accent); font-weight:bold;">Official</span>
+      </div>
+
+      <div class="phone-copy-box" onclick="copyPhoneNum()">
+        <div>
+          <div style="font-size:11px; color:var(--muted);">ဖုန်းနံပါတ် (နှိပ်ပြီး ကူးယူပါ)</div>
+          <div class="phone-num" id="payPhoneNum">09409700002</div>
+        </div>
+        <div class="copy-pill" id="copyPillBtn">📋 ကူးယူမည်</div>
+      </div>
+
+      <div id="copyToast" class="copy-toast hidden">✅ ဖုန်းနံပါတ်ကို ကူးယူပြီးပါပြီ</div>
+
+      <div class="pay-detail-grid">
+        <div>အမည်: <b>Kaung San Phyo</b></div>
+        <div>ပမာဏ: <b id="payAmountText" style="color:#facc15;">10,000 ကျပ်</b></div>
+      </div>
     </div>
 
     <div style="margin-top:12px;">
@@ -349,13 +468,14 @@
   document.getElementById("profName").innerText = tgUser.first_name || "-";
   document.getElementById("profId").innerText = tgUser.id;
 
+  let selectedVideoFile = null;
+
   let state = {
     ttsVoice: "male",
     ttsSpeed: 1.0,
     vidVoice: "auto",
     vidSpeed: 1.0,
     jobId: "",
-    videoExt: ".mp4",
     duration: 0,
     script: [],
     flip: false,
@@ -436,41 +556,111 @@
         body: JSON.stringify({ user_id: tgUser.id, text, voice_mode: state.ttsVoice, speed: state.ttsSpeed })
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.detail || "Error");
+      if (!r.ok) throw new Error(d.detail || "အသံထုတ်ရာတွင် အမှားအယွင်း ဖြစ်သွားပါသည်");
       const fullUrl = API_BASE + d.audio_url;
       document.getElementById("ttsAudio").src = fullUrl;
       document.getElementById("ttsDownload").href = fullUrl;
       document.getElementById("ttsResult").classList.remove("hidden");
       loadUser();
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert("❌ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ"); }
     btn.disabled = false; btn.innerText = "✨ Generate Voice";
+  }
+
+  // Extract lightweight WAV audio directly in browser so upload never fails!
+  async function extractAudioWav(file) {
+    const arrayBuf = await file.arrayBuffer();
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
+    const duration = audioBuf.duration;
+    const chData = audioBuf.getChannelData(0);
+    const wavBuf = new ArrayBuffer(44 + chData.length * 2);
+    const view = new DataView(wavBuf);
+    const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + chData.length * 2, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, 16000, true);
+    view.setUint32(28, 32000, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, 'data');
+    view.setUint32(40, chData.length * 2, true);
+    let offset = 44;
+    for (let i = 0; i < chData.length; i++, offset += 2) {
+      let s = Math.max(-1, Math.min(1, chData[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    await audioCtx.close();
+    return { blob: new Blob([wavBuf], { type: 'audio/wav' }), duration };
+  }
+
+  function xhrUpload(url, formData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.upload.onprogress = e => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+          else reject(new Error(data.detail || "ဆာဗာ ချိတ်ဆက်မှု မအောင်မြင်ပါ"));
+        } catch (err) {
+          reject(new Error("ဆာဗာ ပြန်ကြားချက် ဖတ်မရပါ"));
+        }
+      };
+      xhr.onerror = () => reject(new Error("အင်တာနက်လိုင်း သို့မဟုတ် ဆာဗာ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည်"));
+      xhr.send(formData);
+    });
   }
 
   async function handleVideoUpload(ev) {
     const file = ev.target.files[0];
     if (!file) return;
+    selectedVideoFile = file;
     document.getElementById("vidPreview").src = URL.createObjectURL(file);
-    const st = document.getElementById("uploadStatus");
-    st.innerText = "⏳ AI က ဗီဒီယိုနားထောင်ပြီး မြန်မာဘာသာပြန်နေပါသည် (ခဏစောင့်ပါ)...";
 
-    const fd = new FormData();
-    fd.append("user_id", tgUser.id);
-    fd.append("file", file);
+    const progWrap = document.getElementById("uploadProgressWrap");
+    const barFill = document.getElementById("uploadBarFill");
+    const progText = document.getElementById("uploadProgressText");
+    const errBox = document.getElementById("uploadErrorMsg");
+
+    errBox.classList.add("hidden");
+    progWrap.classList.remove("hidden");
+    barFill.style.width = "5%";
+    progText.innerText = "📤 Video ပြင်ဆင်နေသည်... 5%";
 
     try {
-      const r = await fetch(`${API_BASE}/api/analyze-video`, { method: "POST", body: fd });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.detail || "Upload failed");
+      const { blob, duration } = await extractAudioWav(file);
+      const fd = new FormData();
+      fd.append("user_id", tgUser.id);
+      fd.append("duration", duration);
+      fd.append("file", blob, "audio.wav");
+
+      const d = await xhrUpload(`${API_BASE}/api/analyze-audio`, fd, pct => {
+        const scaled = Math.min(90, Math.max(10, Math.round(pct * 0.85)));
+        barFill.style.width = scaled + "%";
+        progText.innerText = `📤 Video တင်နေသည်... ${scaled}%`;
+      });
+
+      barFill.style.width = "100%";
+      progText.innerText = "✅ မြန်မာဘာသာပြန်ပြီးပါပြီ! 100%";
+
       state.jobId = d.job_id;
-      state.videoExt = d.video_ext;
       state.duration = d.duration;
       state.script = d.script;
       document.getElementById("vidCost").innerText = d.est_cost;
       renderScriptList();
       document.getElementById("videoEditor").classList.remove("hidden");
-      st.innerText = "✅ ဘာသာပြန်ပြီးပါပြီ! အောက်တွင် စာတန်းစစ်ဆေးပြီး Video ထုတ်နိုင်ပါပြီ။";
     } catch (e) {
-      st.innerText = "❌ " + e.message;
+      progWrap.classList.add("hidden");
+      errBox.innerText = "❌ " + (e.message || "Video တင်ရာတွင် အဆင်မပြေပါ — ပြန်လည်ကြိုးစားကြည့်ပါ");
+      errBox.classList.remove("hidden");
     }
   }
 
@@ -534,7 +724,6 @@
     ["auto", "male", "female"].forEach(m => document.getElementById("vmode-" + m).classList.toggle("selected", m === v));
   }
 
-  // Drag & Resize Mask Box + Subtitle Position
   const wrap = document.getElementById("previewWrap");
   const maskBox = document.getElementById("maskBox");
   const resizeHandle = document.getElementById("resizeHandle");
@@ -574,41 +763,52 @@
   window.addEventListener("pointerup", () => dragTarget = null);
 
   async function renderVideo() {
+    if (!selectedVideoFile) return alert("Video အရင်ရွေးချယ်ပါ");
     const btn = document.getElementById("btnRender");
-    const st = document.getElementById("renderStatus");
+    const wrapProg = document.getElementById("renderProgressWrap");
+    const barFill = document.getElementById("renderBarFill");
+    const progText = document.getElementById("renderProgressText");
+
     btn.disabled = true;
-    st.innerText = "⏳ မြန်မာစကားပြောနှင့် စာတန်းထိုး ပေါင်းစပ်နေပါသည် (၁-၂ မိနစ်ခန့် စောင့်ပါ)...";
+    wrapProg.classList.remove("hidden");
+    barFill.style.width = "5%";
+    progText.innerText = "🎬 Video ပေးပို့နေသည်... 5%";
+
+    const fd = new FormData();
+    fd.append("user_id", tgUser.id);
+    fd.append("job_id", state.jobId);
+    fd.append("duration", state.duration);
+    fd.append("voice_mode", state.vidVoice);
+    fd.append("speed", state.vidSpeed);
+    fd.append("flip", state.flip);
+    fd.append("mask_mode", state.maskMode);
+    fd.append("mask_box", JSON.stringify(state.maskBox));
+    fd.append("sub_enabled", state.subEnabled);
+    fd.append("sub_y", state.subY);
+    fd.append("sub_size", state.subSize);
+    fd.append("sub_font", state.subFont);
+    fd.append("sub_style", state.subStyle);
+    fd.append("script", JSON.stringify(state.script));
+    fd.append("video", selectedVideoFile);
+
     try {
-      const r = await fetch(`${API_BASE}/api/render-video`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: tgUser.id,
-          job_id: state.jobId,
-          video_ext: state.videoExt,
-          duration: state.duration,
-          voice_mode: state.vidVoice,
-          speed: state.vidSpeed,
-          flip: state.flip,
-          mask_mode: state.maskMode,
-          mask_box: state.maskBox,
-          sub_enabled: state.subEnabled,
-          sub_y: state.subY,
-          sub_size: state.subSize,
-          sub_font: state.subFont,
-          sub_style: state.subStyle,
-          script: state.script
-        })
+      const d = await xhrUpload(`${API_BASE}/api/render-video`, fd, pct => {
+        const s = Math.min(85, Math.max(10, Math.round(pct * 0.75)));
+        barFill.style.width = s + "%";
+        progText.innerText = `🎬 မြန်မာစကားပြော ပေါင်းစပ်နေသည်... ${s}%`;
       });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.detail || "Render failed");
+
+      barFill.style.width = "100%";
+      progText.innerText = "✅ ဗီဒီယို ထုတ်လုပ်ပြီးပါပြီ! 100%";
+
       const vUrl = API_BASE + d.video_url;
       document.getElementById("outVideo").src = vUrl;
       document.getElementById("vidDownload").href = vUrl;
       document.getElementById("vidResult").classList.remove("hidden");
-      st.innerText = "✅ ဗီဒီယို ထုတ်လုပ်ပြီးပါပြီ!";
       loadUser();
-    } catch (e) { st.innerText = "❌ " + e.message; }
+    } catch (e) {
+      progText.innerText = "❌ " + (e.message || "Video ထုတ်လုပ်ရာတွင် အဆင်မပြေပါ");
+    }
     btn.disabled = false;
   }
 
@@ -622,7 +822,38 @@
     state.payMethod = m;
     document.getElementById("pay-kpay").classList.toggle("active", m === "KBZPay");
     document.getElementById("pay-wave").classList.toggle("active", m === "WavePay");
-    document.getElementById("payMethodText").innerText = m;
+    const badgeEl = document.getElementById("walletBadgeDisplay");
+    if (m === "KBZPay") {
+      badgeEl.innerHTML = `<span class="kpay-icon">KBZ</span> <span>KBZPay ငွေလွှဲအကောင့်</span>`;
+    } else {
+      badgeEl.innerHTML = `<span class="wave-icon">W</span> <span>WavePay ငွေလွှဲအကောင့်</span>`;
+    }
+  }
+
+  function copyPhoneNum() {
+    const num = "09409700002";
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(num).catch(() => fallbackCopy(num));
+    } else {
+      fallbackCopy(num);
+    }
+    const toast = document.getElementById("copyToast");
+    const pill = document.getElementById("copyPillBtn");
+    toast.classList.remove("hidden");
+    pill.innerText = "✅ ကူးယူပြီး";
+    setTimeout(() => {
+      toast.classList.add("hidden");
+      pill.innerText = "📋 ကူးယူမည်";
+    }, 3000);
+  }
+
+  function fallbackCopy(text) {
+    const inp = document.createElement("input");
+    inp.value = text;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand("copy");
+    document.body.removeChild(inp);
   }
 
   function previewSlip(ev) {
@@ -647,7 +878,7 @@
       const r = await fetch(`${API_BASE}/api/submit-payment`, { method: "POST", body: fd });
       if (!r.ok) throw new Error("Failed");
       alert("✅ ပြေစာ တင်ပြီးပါပြီ! Admin စစ်ဆေးပြီးတာနဲ့ Telegram မှ အကြောင်းကြားပေးပါမည်။");
-    } catch (e) { alert("Error တက်သွားပါသည် ပြန်စမ်းကြည့်ပါ"); }
+    } catch (e) { alert("❌ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ပြန်စမ်းကြည့်ပါ"); }
     btn.disabled = false; btn.innerText = "✅ ပြေစာတင်ပြီး အတည်ပြုမည်";
   }
 </script>
