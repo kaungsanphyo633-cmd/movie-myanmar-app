@@ -42,18 +42,31 @@
   textarea { width: 100%; background: #0f111a; border: 1px solid #2c324c; border-radius: 12px; color: #fff; padding: 12px; font-size: 14px; min-height: 120px; resize: vertical; }
   .primary-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; background: var(--grad); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; }
   .primary-btn:disabled { opacity: 0.5; }
+  .danger-btn { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; padding: 5px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
   .upload-box { border: 2px dashed #374151; border-radius: 14px; padding: 24px 12px; text-align: center; cursor: pointer; background: #111420; }
   .progress-wrap { margin-top: 14px; background: #10131f; border: 1px solid #262c45; border-radius: 12px; padding: 12px; }
   .progress-bar-bg { width: 100%; height: 8px; background: #22273d; border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
   .progress-bar-fill { height: 100%; width: 0%; background: var(--grad); border-radius: 99px; transition: width 0.25s ease; }
   .progress-text { font-size: 13px; color: var(--accent); font-weight: bold; text-align: center; }
+  .render-details-box {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #2b334f;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .render-details-box div b { color: #fff; }
   .preview-wrap { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-top: 10px; touch-action: none; }
-  .preview-wrap video { width: 100%; display: block; max-height: 300px; object-fit: contain; }
-  .preview-wrap.flipped video { transform: scaleX(-1); }
-  .mask-box { position: absolute; left: 10%; top: 76%; width: 80%; height: 15%; border: 2px solid #2dd4bf; background: rgba(45, 212, 191, 0.22); border-radius: 6px; cursor: move; display: none; }
+  .preview-wrap video { width: 100%; display: block; max-height: 300px; object-fit: contain; transition: transform 0.2s; }
+  /* Flip ONLY the video element so controls & overlays never mirror */
+  .preview-wrap video.flipped-vid { transform: scaleX(-1); }
+  .mask-box { position: absolute; left: 10%; top: 68%; width: 80%; height: 15%; border: 2px solid #2dd4bf; background: rgba(45, 212, 191, 0.22); border-radius: 6px; cursor: move; display: none; z-index: 10; }
   .mask-box.cover { background: rgba(0, 0, 0, 0.88); border-color: #f59e0b; }
   .resize-handle { position: absolute; right: -8px; bottom: -8px; width: 18px; height: 18px; border-radius: 50%; background: #2dd4bf; cursor: nwse-resize; }
-  .sub-drag { position: absolute; left: 50%; top: 82%; transform: translateX(-50%); background: #facc15; color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 20px; cursor: ns-resize; white-space: nowrap; }
+  .sub-drag { position: absolute; left: 50%; top: 74%; transform: translateX(-50%); background: #facc15; color: #000; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 20px; cursor: ns-resize; white-space: nowrap; z-index: 12; }
   .script-item { background: #10131e; border: 1px solid #262b42; border-radius: 12px; padding: 10px; margin-bottom: 8px; }
   .script-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--accent); margin-bottom: 4px; }
   .script-orig { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
@@ -231,10 +244,13 @@
   <!-- VIDEO DUBBING SECTION -->
   <div id="sec-vid" class="hidden">
     <div class="card">
-      <div class="card-title"><span>🎬 Video ➔ မြန်မာအသံ (၁ မိနစ် = 68 Credits)</span></div>
+      <div class="card-title">
+        <span>🎬 Video ➔ မြန်မာအသံ (၁ မိနစ် = 68 Credits)</span>
+        <button id="btnClearVideo" class="danger-btn hidden" onclick="clearUploadedVideo()">🗑️ Video ပြန်ဖျက်မည်</button>
+      </div>
       <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">English • 中文 • 한국어 • ไทย စတဲ့ ဗီဒီယိုများကို AI က နားထောင်ပြီး မြန်မာလို ဘာသာပြန် အသံထုတ်ပေးပါမယ်။</p>
       <input type="file" id="videoFile" accept="video/*" class="hidden" onchange="handleVideoUpload(event)">
-      <div class="upload-box" onclick="document.getElementById('videoFile').click()">
+      <div class="upload-box" id="uploadBoxArea" onclick="document.getElementById('videoFile').click()">
         <div style="font-size:24px;">📤</div>
         <div style="font-weight:bold; margin-top:4px;">Video တင်ရန် နှိပ်ပါ</div>
         <div style="font-size:11px; color:var(--muted);">အများဆုံး ၁၅ မိနစ် • MP4 / MOV</div>
@@ -285,7 +301,7 @@
         </div>
         <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">စာတန်း ဖောင့် & စတိုင်</div>
         <div class="row-3" style="margin-bottom:8px;">
-          <div class="chip active" id="setSubFont('Padauk',this)">မြန်မာ Padauk</div>
+          <div class="chip active" onclick="setSubFont('Padauk',this)">မြန်မာ Padauk</div>
           <div class="chip" onclick="setSubFont('Noto Serif Myanmar',this)">မြန်မာ Serif</div>
           <div class="chip" onclick="setSubStyle('Sunny',this)">🟡 အဝါရောင်</div>
         </div>
@@ -341,6 +357,14 @@
         <div id="renderProgressWrap" class="progress-wrap hidden">
           <div class="progress-bar-bg"><div class="progress-bar-fill" id="renderBarFill"></div></div>
           <div class="progress-text" id="renderProgressText">🎬 Video ထုတ်လုပ်နေသည်... 0%</div>
+          <div class="render-details-box" id="renderDetailsBox">
+            <div>⏱️ ကြာချိန်: <b id="detDur">0:00</b></div>
+            <div>🗣️ အသံ: <b id="detVoice">ယောက်ျား+မိန်းမ</b></div>
+            <div>⚡ အမြန်နှုန်း: <b id="detSpeed">1x</b></div>
+            <div>📝 စာတန်း: <b id="detSub">ထိုးမည်</b></div>
+            <div>↔️ ဘယ်ညာလှန်: <b id="detFlip">မူရင်းအတိုင်း</b></div>
+            <div>💎 ကျသင့်ငွေ: <b id="detCost">0 pts</b></div>
+          </div>
         </div>
         <div id="vidResult" class="hidden" style="margin-top:12px;">
           <video id="outVideo" controls style="width:100%; border-radius:12px;"></video>
@@ -478,9 +502,9 @@
     script: [],
     flip: false,
     maskMode: "none",
-    maskBox: { x: 0.1, y: 0.76, w: 0.8, h: 0.15 },
+    maskBox: { x: 0.1, y: 0.68, w: 0.8, h: 0.15 },
     subEnabled: true,
-    subY: 0.82,
+    subY: 0.74,
     subSize: 1.0,
     subFont: "Padauk",
     subStyle: "Clean",
@@ -564,7 +588,6 @@
     btn.disabled = false; btn.innerText = "✨ Generate Voice";
   }
 
-  // Ultra-lightweight 8kHz 8-bit Mono WAV extractor (4x smaller, zero RAM crash)
   async function extractTinyAudioWav(file) {
     const arrayBuf = await file.arrayBuffer();
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -625,11 +648,30 @@
     });
   }
 
+  function clearUploadedVideo() {
+    selectedVideoFile = null;
+    state.jobId = "";
+    state.duration = 0;
+    state.script = [];
+    document.getElementById("videoFile").value = "";
+    document.getElementById("vidPreview").src = "";
+    document.getElementById("scriptList").innerHTML = "";
+    document.getElementById("videoEditor").classList.add("hidden");
+    document.getElementById("uploadProgressWrap").classList.add("hidden");
+    document.getElementById("uploadErrorMsg").classList.add("hidden");
+    document.getElementById("vidResult").classList.add("hidden");
+    document.getElementById("renderProgressWrap").classList.add("hidden");
+    document.getElementById("btnClearVideo").classList.add("hidden");
+    document.getElementById("uploadBoxArea").classList.remove("hidden");
+  }
+
   async function handleVideoUpload(ev) {
     const file = ev.target.files[0];
     if (!file) return;
     selectedVideoFile = file;
     document.getElementById("vidPreview").src = URL.createObjectURL(file);
+    document.getElementById("btnClearVideo").classList.remove("hidden");
+    document.getElementById("uploadBoxArea").classList.add("hidden");
 
     const progWrap = document.getElementById("uploadProgressWrap");
     const barFill = document.getElementById("uploadBarFill");
@@ -719,7 +761,7 @@
     state.flip = val;
     document.getElementById("flip-on").classList.toggle("active", val);
     document.getElementById("flip-off").classList.toggle("active", !val);
-    document.getElementById("previewWrap").classList.toggle("flipped", val);
+    document.getElementById("vidPreview").classList.toggle("flipped-vid", val);
   }
 
   function setSubEnabled(val) {
@@ -787,12 +829,27 @@
   });
   window.addEventListener("pointerup", () => dragTarget = null);
 
+  function fmtDur(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
   async function renderVideo() {
     if (!selectedVideoFile) return alert("Video အရင်ရွေးချယ်ပါ");
     const btn = document.getElementById("btnRender");
     const wrapProg = document.getElementById("renderProgressWrap");
     const barFill = document.getElementById("renderBarFill");
     const progText = document.getElementById("renderProgressText");
+
+    // Populate Video Details Box
+    const voiceMap = { auto: "ယောက်ျား + မိန်းမ", male: "ယောက်ျားသံ သီးသန့်", female: "မိန်းကလေးသံ သီးသန့်" };
+    document.getElementById("detDur").innerText = fmtDur(state.duration);
+    document.getElementById("detVoice").innerText = voiceMap[state.vidVoice] || "Auto";
+    document.getElementById("detSpeed").innerText = state.vidSpeed + "x";
+    document.getElementById("detSub").innerText = state.subEnabled ? `ထိုးမည် (${state.subStyle})` : "မထိုးဘူး";
+    document.getElementById("detFlip").innerText = state.flip ? "ဘယ်ညာလှန်ထားသည်" : "မူရင်းအတိုင်း";
+    document.getElementById("detCost").innerText = document.getElementById("vidCost").innerText + " points";
 
     btn.disabled = true;
     wrapProg.classList.remove("hidden");
@@ -817,16 +874,35 @@
     fd.append("video", selectedVideoFile);
 
     try {
-      const d = await xhrUpload(`${API_BASE}/api/render-video`, fd, pct => {
-        const s = Math.min(85, Math.max(10, Math.round(pct * 0.75)));
+      const initRes = await xhrUpload(`${API_BASE}/api/render-video`, fd, pct => {
+        const s = Math.min(75, Math.max(10, Math.round(pct * 0.70)));
         barFill.style.width = s + "%";
-        progText.innerText = `🎬 မြန်မာစကားပြော ပေါင်းစပ်နေသည်... ${s}%`;
+        progText.innerText = `🎬 Video ပေးပို့နေသည်... ${s}%`;
       });
+
+      const renderId = initRes.render_id;
+      let fakePct = 78;
+      let finalData = null;
+
+      while (!finalData) {
+        await new Promise(r => setTimeout(r, 2500));
+        if (fakePct < 96) fakePct += 2;
+        barFill.style.width = fakePct + "%";
+        progText.innerText = `🎬 မြန်မာစကားပြော ပေါင်းစပ်နေသည်... ${fakePct}%`;
+
+        const pollRes = await fetch(`${API_BASE}/api/job/${renderId}`);
+        const pollJson = await pollRes.json();
+        if (pollJson.status === "done") {
+          finalData = pollJson;
+        } else if (pollJson.status === "error") {
+          throw new Error(pollJson.detail || "Video ထုတ်လုပ်ရာတွင် အဆင်မပြေပါ");
+        }
+      }
 
       barFill.style.width = "100%";
       progText.innerText = "✅ ဗီဒီယို ထုတ်လုပ်ပြီးပါပြီ! 100%";
 
-      const vUrl = API_BASE + d.video_url;
+      const vUrl = API_BASE + finalData.video_url;
       document.getElementById("outVideo").src = vUrl;
       document.getElementById("vidDownload").href = vUrl;
       document.getElementById("vidResult").classList.remove("hidden");
