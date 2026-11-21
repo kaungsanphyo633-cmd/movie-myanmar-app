@@ -61,7 +61,6 @@
   .render-details-box div b { color: #fff; }
   .preview-wrap { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-top: 10px; touch-action: none; }
   .preview-wrap video { width: 100%; display: block; max-height: 300px; object-fit: contain; transition: transform 0.2s; }
-  /* Flip ONLY the video element so controls & overlays never mirror */
   .preview-wrap video.flipped-vid { transform: scaleX(-1); }
   .mask-box { position: absolute; left: 10%; top: 68%; width: 80%; height: 15%; border: 2px solid #2dd4bf; background: rgba(45, 212, 191, 0.22); border-radius: 6px; cursor: move; display: none; z-index: 10; }
   .mask-box.cover { background: rgba(0, 0, 0, 0.88); border-color: #f59e0b; }
@@ -584,7 +583,7 @@
       document.getElementById("ttsDownload").href = fullUrl;
       document.getElementById("ttsResult").classList.remove("hidden");
       loadUser();
-    } catch (e) { alert("❌ " + (e.message || "ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည်")); }
+    } catch (e) { alert("❌ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ"); }
     btn.disabled = false; btn.innerText = "✨ Generate Voice";
   }
 
@@ -648,6 +647,24 @@
     });
   }
 
+  async function safePollJob(jobId) {
+    let netErrors = 0;
+    while (true) {
+      await new Promise(r => setTimeout(r, 2500));
+      try {
+        const res = await fetch(`${API_BASE}/api/job/${jobId}`);
+        const json = await res.json();
+        netErrors = 0;
+        if (json.status === "done" || json.status === "error") return json;
+      } catch (err) {
+        netErrors++;
+        if (netErrors > 8) {
+          return { status: "error", detail: "အင်တာနက်လိုင်း သို့မဟုတ် ဆာဗာ ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ" };
+        }
+      }
+    }
+  }
+
   function clearUploadedVideo() {
     selectedVideoFile = null;
     state.jobId = "";
@@ -696,24 +713,11 @@
         progText.innerText = `📤 Video တင်နေသည်... ${scaled}%`;
       });
 
-      const jobId = initRes.job_id;
-      let fakePct = 82;
-      let resultData = null;
+      barFill.style.width = "88%";
+      progText.innerText = "🤖 AI မြန်မာဘာသာပြန်နေသည်... 88%";
 
-      while (!resultData) {
-        await new Promise(r => setTimeout(r, 2000));
-        if (fakePct < 96) fakePct += 2;
-        barFill.style.width = fakePct + "%";
-        progText.innerText = `🤖 AI မြန်မာဘာသာပြန်နေသည်... ${fakePct}%`;
-
-        const pollRes = await fetch(`${API_BASE}/api/job/${jobId}`);
-        const pollJson = await pollRes.json();
-        if (pollJson.status === "done") {
-          resultData = pollJson;
-        } else if (pollJson.status === "error") {
-          throw new Error(pollJson.detail || "AI ဘာသာပြန်ရာတွင် အဆင်မပြေပါ");
-        }
-      }
+      const resultData = await safePollJob(initRes.job_id);
+      if (resultData.status === "error") throw new Error(resultData.detail);
 
       barFill.style.width = "100%";
       progText.innerText = "✅ မြန်မာဘာသာပြန်ပြီးပါပြီ! 100%";
@@ -842,7 +846,6 @@
     const barFill = document.getElementById("renderBarFill");
     const progText = document.getElementById("renderProgressText");
 
-    // Populate Video Details Box
     const voiceMap = { auto: "ယောက်ျား + မိန်းမ", male: "ယောက်ျားသံ သီးသန့်", female: "မိန်းကလေးသံ သီးသန့်" };
     document.getElementById("detDur").innerText = fmtDur(state.duration);
     document.getElementById("detVoice").innerText = voiceMap[state.vidVoice] || "Auto";
@@ -880,24 +883,11 @@
         progText.innerText = `🎬 Video ပေးပို့နေသည်... ${s}%`;
       });
 
-      const renderId = initRes.render_id;
-      let fakePct = 78;
-      let finalData = null;
+      barFill.style.width = "86%";
+      progText.innerText = "🎬 မြန်မာစကားပြော ပေါင်းစပ်နေသည်... 86%";
 
-      while (!finalData) {
-        await new Promise(r => setTimeout(r, 2500));
-        if (fakePct < 96) fakePct += 2;
-        barFill.style.width = fakePct + "%";
-        progText.innerText = `🎬 မြန်မာစကားပြော ပေါင်းစပ်နေသည်... ${fakePct}%`;
-
-        const pollRes = await fetch(`${API_BASE}/api/job/${renderId}`);
-        const pollJson = await pollRes.json();
-        if (pollJson.status === "done") {
-          finalData = pollJson;
-        } else if (pollJson.status === "error") {
-          throw new Error(pollJson.detail || "Video ထုတ်လုပ်ရာတွင် အဆင်မပြေပါ");
-        }
-      }
+      const finalData = await safePollJob(initRes.render_id);
+      if (finalData.status === "error") throw new Error(finalData.detail);
 
       barFill.style.width = "100%";
       progText.innerText = "✅ ဗီဒီယို ထုတ်လုပ်ပြီးပါပြီ! 100%";
@@ -908,7 +898,10 @@
       document.getElementById("vidResult").classList.remove("hidden");
       loadUser();
     } catch (e) {
-      progText.innerText = "❌ " + (e.message || "Video ထုတ်လုပ်ရာတွင် အဆင်မပြေပါ");
+      const msg = (e && e.message && e.message !== "Failed to fetch")
+        ? e.message
+        : "ချိတ်ဆက်မှု ပြတ်တောက်သွားပါသည် — ထပ်မံကြိုးစားကြည့်ပါ";
+      progText.innerText = "❌ " + msg;
     }
     btn.disabled = false;
   }
